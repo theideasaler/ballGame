@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+    <style>
+        #main {
+            width: 600px;
+            height: 600px;
+            background: url(./galaxy.jpg);
+            margin: 0 auto;
+            position: relative;
+        }
+
+        #ball {
+            width: 60px;
+            height: 60px;
+            background: url(./moon.png);
+            border-radius: 100%;
+            position: absolute;
+        }
+
+        #board {
+
+            height: 30px;
+            background: red;
+            border-radius: 15px;
+            position: absolute;
+            bottom: 0;
+
+        }
+
+        #energy {
+            width: 20px;
+            height: 20;
+            background: rgb(4, 89, 199);
+            border-radius: 10px;
+            margin: 0 auto;
+            /* margin-top: 10px; */
+            position: absolute;
+        }
+
+        #energyBgm {
+            width: 20px;
+            height: 100px;
+            background: rgb(141, 141, 141);
+            border-radius: 10px;
+            margin: 0 auto;
+        }
+
+        #home {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+
+<body id="home">
+    <div style="margin: 0 auto;display: flex;
+    flex-direction: row;">
+        <div id="main">
+            <div id="ball" style="left:270px;top:0;"></div>
+            <div id="board" style=" width: 90px; left: 270px;"></div>
+        </div>
+        <div style="display: flex;
+        flex-direction: column;
+        justify-content: flex-end;margin-left: 10px">
+            <div style="display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;">
+                <div id="energy"></div>
+                <div id="energyBgm"></div>
+            </div>
+            <div>energy</div>
+            <div id="score">Score: 0</div>
+            <div id="tryAgain">
+                <button onclick="ball.init()">Try Again</button>
+            </div>
+        </div>
+    </div>
+    <div style="margin:0 auto">right click your mouse to release energy</div>
+</body>
+
+
+
+<script>
+    var main = document.getElementById('main');
+    var ball = document.getElementById('ball');
+    var board = document.getElementById('board');
+    var energy = document.getElementById('energy');
+
+    var clickedTime = 1;
+    var speedVariable = 1;
+    var score = 0;
+
+    document.addEventListener("click", function () {
+        if (clickedTime == 5) {
+            board.style.width = 180 + "px";
+            clickedTime = 0;
+            energy.style.height = clickedTime * 20 + "px";
+            setTimeout(function () {
+                board.style.width = 90 + "px";
+            }, 2000);
+        }
+    });
+
+    //set speed function
+    var speed = {
+        speedX: 5 * Math.random() + speedVariable,
+        speedY: 5 * Math.random() + speedVariable
+    }
+
+    //set ball's movement
+    ball.run = function () {
+        var left = parseInt(this.style.left) + speed.speedX;
+        var top = parseInt(this.style.top) + speed.speedY;
+        this.style.left = left + 'px';
+        this.style.top = top + 'px';
+        this.check(left, top);
+    }
+
+    //add the ball's energy
+    var addEnergy = function () {
+        energy.style.height = clickedTime * 20 + "px";
+        clickedTime = clickedTime <= 4 ? clickedTime + 1 : clickedTime;
+    };
+
+    //check if the ball touched other objects
+    ball.check = function (left, top) {
+        var board_left = parseInt(board.style.left);
+        var board_top = parseInt(board.style.top);
+        var board_length = parseInt(board.style.width);
+
+        //sides detect
+        if (left <= 0 || left >= 540) {
+            this.turnX();
+        }
+
+        //top detect
+        if (top <= 0) {
+            this.turnY();
+        }
+
+        //bottom detect
+        if (top >= 540) {
+            clearInterval();
+            speed.speedX = 0;
+            speed.speedY = 0;
+        }
+        //board click detect
+        if (speed.speedX !== 0 || speed.speedY !== 0) {
+            if (left + 30 >= board_left && left + 30 <= board_left + board_length && top + 30 >= board_top) {
+                this.turnY();
+                addEnergy();
+                score += 1;
+                document.getElementById("score").innerHTML = "Score: " + score;
+            }
+        }
+    }
+    //control ball's direction and speed
+    ball.turnX = function () {
+        speed.speedX = speed.speedX > 0 ? -(5 * Math.random() + speedVariable * 3) : 5 * Math.random() + speedVariable * 4;
+    }
+    ball.turnY = function () {
+        speedVariable += 0.1;
+        speed.speedY = speed.speedY > 0 ? -(5 * Math.random() + 4 * speedVariable) : 5 * Math.random() + 3 * speedVariable;
+    }
+    //set time interval
+    var clock = setInterval(function () {
+        ball.run();
+    }, 20);
+
+    //move board
+    main.onmousemove = function (e) {
+        if (e.srcElement !== main) {
+            return;
+        }
+        board.style.left = e.offsetX - 30 + 'px';
+        board.style.top = e.offsetY - 20 + 'px';
+
+    }
+    //restart function
+    ball.init = function () {
+        score = 0;
+        speedVariable = 1;
+        ball.style.left = 270;
+        ball.style.top = 0;
+        document.getElementById("score").innerHTML = "Score: " + score;
+    }
+</script>
+
+</html>
